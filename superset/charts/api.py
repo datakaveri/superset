@@ -106,6 +106,8 @@ class ChartRestApi(BaseSupersetModelRestApi):
     allow_browser_login = True
 
     @before_request(only=["thumbnail", "screenshot", "cache_screenshot"])
+    def demo_before_request():
+        logger.info("[This is a before request for ChartAPI]")
     def ensure_thumbnails_enabled(self) -> Optional[Response]:
         if not is_feature_enabled("THUMBNAILS"):
             return self.response_404()

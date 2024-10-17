@@ -25,8 +25,115 @@ import os
 
 from celery.schedules import crontab
 from flask_caching.backends.filesystemcache import FileSystemCache
+from flask import Flask, session, g, request, current_app, jsonify
+from flask.sessions import SecureCookieSessionInterface
+import requests
+
+# from console_log import ConsoleLog
+
+# def FLASK_APP_MUTATOR(app):
+#     app.wsgi_app = ConsoleLog(app.wsgi_app, app.logger)
+
+
+# ? Keycloak Imports 
+from keycloak_security_manager import OIDCSecurityManager
+from flask_appbuilder.security.manager import AUTH_OID, AUTH_REMOTE_USER, AUTH_DB, AUTH_LDAP, AUTH_OAUTH
+import os
+
+# from setup import BASE_DIR
+# from superset.config import BASE_DIR
 
 logger = logging.getLogger()
+
+# ? Keycloak Config
+curr = os.path.abspath(os.getcwd())
+
+AUTH_TYPE = AUTH_OID
+SECRET_KEY = 'SomethingNotEntirelySecret'
+OIDC_CLIENT_SECRETS = curr + '/docker/pythonpath_dev/client_secret.json'
+OIDC_ID_TOKEN_COOKIE_SECURE = False
+OIDC_OPENID_REALM: 'myrealm'
+OIDC_INTROSPECTION_AUTH_METHOD: 'client_secret_post'
+CUSTOM_SECURITY_MANAGER = OIDCSecurityManager
+
+# Will allow user self registration, allowing to create Flask users from Authorized User
+AUTH_USER_REGISTRATION = True
+
+# The default user self registration role
+AUTH_USER_REGISTRATION_ROLE = 'Public'
+
+def make_session_permanent():
+    '''
+    Enable maxAge for the cookie 'session'
+    '''
+    session.permanent = True
+
+def middleware_function():
+    logger.info('[This is a middleware function]')
+    if g.user is not None and g.user.is_authenticated:
+        logger.info(g.user) 
+
+        # TODO: Fetch access token
+        cookie_value = request.cookies.get('session')
+        session_serializer = SecureCookieSessionInterface() \
+                        .get_signing_serializer(current_app)
+        decoded_session = session_serializer.loads(cookie_value)
+        session_token = decoded_session['oidc_auth_token']['access_token']
+        # try:
+        #     token_url = 'https://cos.iudx.org.in/auth/v1/token'
+
+        #     headers = {
+        #         'authorization': f'Bearer {session_token}'
+        #     }
+
+        #     data = {
+        #         'itemId': 'rs.cos.iudx.org.in',
+        #         'itemType': 'resource_server',
+        #         'role': 'consumer'
+        #     }
+
+        #     response = requests.post(token_url, headers=headers, json=data)
+
+        #     if response.status_code == 200:
+        #         logger.info(f"[Token from IUDX]: {response.json()['results']['accessToken']}")
+        #     else:
+        #         logger.info('Error fetching token')
+
+        # except Exception as e:
+        #     print(f"Error fetching data: {e}")
+        
+        path = request.path
+        if '/api/v1/chart' in path:
+            logger.info('[This is a chart endpoint]')
+            chart_id = path.split('/')[-1]
+            logger.info(f"Chart ID: {chart_id}")
+        
+        if '/api/v1/dashboard' in path:
+            logger.info('[This is a dashboard endpoint]')
+            dashboard_id = path.split('/')[-1]
+            logger.info(f"Dashboard ID: {dashboard_id}")
+
+
+    else:
+        logger.error('User not logged in')
+
+    # if g.user is not None and g.user.is_authenticated:
+    #     username = g.user.username
+    #     email = g.user.email
+    #     roles = [role.name for role in g.user.roles]
+
+    #     # Example: Print user details (for debugging)
+    #     print(f"User: {username}, Email: {email}, Roles: {roles}")
+
+    #     # You can now use these details for any purpose, like logging, custom rules, etc.
+    # else:
+    #     print("No authenticated user found")
+
+# Set up max age of session to 24 hours
+# PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
+def FLASK_APP_MUTATOR(app: Flask) -> None:
+    app.before_request_funcs.setdefault(None, []).append(middleware_function)
+
 
 DATABASE_DIALECT = os.getenv("DATABASE_DIALECT")
 DATABASE_USER = os.getenv("DATABASE_USER")
@@ -70,6 +177,15 @@ CACHE_CONFIG = {
     "CACHE_REDIS_DB": REDIS_RESULTS_DB,
 }
 DATA_CACHE_CONFIG = CACHE_CONFIG
+
+AUTH_ROLES_MAPPING = { 
+  'SUPERSET_USERS': ['Admin'], 
+  'SUPSERSET_ADMIN': ['Admin'],
+  'SUPSERSET_ALPHA': ["Admin"],
+  'SUPSERSET_GAMMA': ["Admin"],
+}
+
+AUTH_ROLES_SYNC_AT_LOGIN = False
 
 
 class CeleryConfig:
