@@ -73,12 +73,12 @@ def middleware_function():
     if g.user is not None and g.user.is_authenticated:
         logger.info(g.user) 
 
-        # TODO: Fetch access token
-        cookie_value = request.cookies.get('session')
-        session_serializer = SecureCookieSessionInterface() \
-                        .get_signing_serializer(current_app)
-        decoded_session = session_serializer.loads(cookie_value)
-        session_token = decoded_session['oidc_auth_token']['access_token']
+        # # TODO: Fetch access token
+        # cookie_value = request.cookies.get('session')
+        # session_serializer = SecureCookieSessionInterface() \
+        #                 .get_signing_serializer(current_app)
+        # decoded_session = session_serializer.loads(cookie_value)
+        # session_token = decoded_session['oidc_auth_token']['access_token']
         # try:
         #     token_url = 'https://cos.iudx.org.in/auth/v1/token'
 
