@@ -49,13 +49,12 @@ logger = logging.getLogger()
 curr = os.path.abspath(os.getcwd())
 
 AUTH_TYPE = AUTH_OID
-SECRET_KEY = 'SomethingNotEntirelySecret'
-OIDC_CLIENT_SECRETS = curr + '/docker/pythonpath_dev/client_secret.json'
+SECRET_KEY = os.getenv('SECRET_KEY')
+OIDC_CLIENT_SECRETS = curr + os.getenv('OIDC_CLIENT_SECRETS')
 OIDC_ID_TOKEN_COOKIE_SECURE = False
-OIDC_OPENID_REALM: 'myrealm'
-OIDC_INTROSPECTION_AUTH_METHOD: 'client_secret_post'
+OIDC_OPENID_REALM: os.getenv('OIDC_OPENID_REALM')
+OIDC_INTROSPECTION_AUTH_METHOD: os.getenv('OIDC_INTROSPECTION_AUTH_METHOD')
 CUSTOM_SECURITY_MANAGER = OIDCSecurityManager
-
 # Will allow user self registration, allowing to create Flask users from Authorized User
 AUTH_USER_REGISTRATION = True
 

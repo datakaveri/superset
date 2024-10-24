@@ -13,6 +13,7 @@ from flask import (
 from flask import current_app, session
 import logging
 from flask.sessions import SecureCookieSessionInterface
+import os
 
 
 logger = logging.getLogger()
@@ -65,7 +66,7 @@ class AuthOIDCView(AuthOIDView):
 
         session.clear()
 
-        redirect_url = 'http://172.17.0.1:8088/login'
+        redirect_url = os.getenv('SUPERSET_REDIRECT_URL')
         return redirect(
             f"{oidc.client_secrets.get('issuer')}/protocol/openid-connect/logout"
             f"?post_logout_redirect_uri={quote(redirect_url)}"
