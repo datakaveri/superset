@@ -62,6 +62,7 @@ const propTypes = {
   impressionId: PropTypes.string.isRequired,
   timeout: PropTypes.number,
   userId: PropTypes.string,
+  children: PropTypes.node,
 };
 
 const defaultProps = {
@@ -212,7 +213,7 @@ class Dashboard extends PureComponent {
 
   applyFilters() {
     const { appliedFilters } = this;
-    const { activeFilters, ownDataCharts, datasources, slices } = this.props;
+    const { activeFilters, ownDataCharts, slices } = this.props;
 
     // refresh charts if a filter was removed, added, or changed
 
@@ -224,6 +225,7 @@ class Dashboard extends PureComponent {
       ownDataCharts,
       this.appliedOwnDataCharts,
     );
+
     [...allKeys].forEach(filterKey => {
       if (
         !currFilterKeys.includes(filterKey) &&
@@ -231,22 +233,12 @@ class Dashboard extends PureComponent {
       ) {
         // filterKey is removed?
         affectedChartIds.push(
-          ...getRelatedCharts(
-            appliedFilters,
-            activeFilters,
-            slices,
-            datasources,
-          )[filterKey],
+          ...getRelatedCharts(filterKey, appliedFilters[filterKey], slices),
         );
       } else if (!appliedFilterKeys.includes(filterKey)) {
         // filterKey is newly added?
         affectedChartIds.push(
-          ...getRelatedCharts(
-            activeFilters,
-            appliedFilters,
-            slices,
-            datasources,
-          )[filterKey],
+          ...getRelatedCharts(filterKey, activeFilters[filterKey], slices),
         );
       } else {
         // if filterKey changes value,
@@ -261,12 +253,7 @@ class Dashboard extends PureComponent {
           )
         ) {
           affectedChartIds.push(
-            ...getRelatedCharts(
-              activeFilters,
-              appliedFilters,
-              slices,
-              datasources,
-            )[filterKey],
+            ...getRelatedCharts(filterKey, activeFilters[filterKey], slices),
           );
         }
 
