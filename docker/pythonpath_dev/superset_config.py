@@ -21,6 +21,10 @@
 # as a final step as a means to override "defaults" configured here
 #
 import logging
+
+# ? Formatted logging for Loki
+# from logging.handlers import RotatingFileHandler
+
 import os
 
 from celery.schedules import crontab
@@ -39,6 +43,11 @@ import requests
 from keycloak_security_manager import OIDCSecurityManager
 from flask_appbuilder.security.manager import AUTH_OID, AUTH_REMOTE_USER, AUTH_DB, AUTH_LDAP, AUTH_OAUTH
 import os
+
+# ? Importing Prometheus Client
+# from prometheus_client import make_wsgi_app
+# from werkzeug.middleware.dispatcher import DispatcherMiddleware
+
 
 # from setup import BASE_DIR
 # from superset.config import BASE_DIR
@@ -66,6 +75,19 @@ def make_session_permanent():
     Enable maxAge for the cookie 'session'
     '''
     session.permanent = True
+
+# TODO: Setup Prometheus metrics 
+
+
+# # ? Enable Prometheus metrics endpoint
+# def prometheus_metrics(app):
+#     logger.info('[This is a prometheus metric log]')
+#     # This will expose Prometheus metrics on the /metrics endpoint
+#     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+#         '/metrics': make_wsgi_app()
+#     })
+#     return app
+
 
 def middleware_function():
     logger.info('[This is a middleware function]')
@@ -132,6 +154,62 @@ def middleware_function():
 # PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
 def FLASK_APP_MUTATOR(app: Flask) -> None:
     app.before_request_funcs.setdefault(None, []).append(middleware_function)
+    # app.before_request_funcs.setdefault(None, []).extend([middleware_function, prometheus_metrics])
+
+
+
+# ? Enable Structured logging for Loki for easier log parsing
+# LOGGING = {`
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': '/var/log/superset/superset.log',
+#             'maxBytes': 1024000,  # 1MB log size
+#             'backupCount': 3,
+#         },
+#     },
+#     'loggers': {
+#         'superset': {
+#             'level': 'DEBUG',
+#             'handlers': ['file'],
+#         },
+#     },
+# }`
+
+TALISMAN_ENABLED = True
+TALISMAN_CONFIG = {
+    "content_security_policy": {
+        "base-uri": ["'self'"],
+        "default-src": ["'self'"],
+        "img-src": [
+            "'self'",
+            "blob:",
+            "data:",
+            "https://apachesuperset.gateway.scarf.sh",
+            "https://static.scarf.sh/",
+            "https://avatars.slack-edge.com",
+        ],
+        "worker-src": ["'self'", "blob:"],
+        "connect-src": [
+            "'self'",
+            "https://api.mapbox.com",
+            "https://events.mapbox.com",
+        ],
+        "object-src": "'none'",
+        "style-src": [
+            "'self'",
+            "'unsafe-inline'",
+        ],
+        "frame-ancestors": ["*"],
+        "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+    },
+    "content_security_policy_nonce_in": ["script-src"],
+    "force_https": False,
+    "session_cookie_secure": False,
+}
 
 
 DATABASE_DIALECT = os.getenv("DATABASE_DIALECT")
@@ -212,7 +290,11 @@ class CeleryConfig:
 
 CELERY_CONFIG = CeleryConfig
 
-FEATURE_FLAGS = {"ALERT_REPORTS": True}
+FEATURE_FLAGS = {
+    "ALERT_REPORTS": True, 
+    # ? Enable Dashboard RBAC in UI
+    "DASHBOARD_RBAC": True
+}
 ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
 WEBDRIVER_BASEURL = "http://superset:8088/"  # When using docker compose baseurl should be http://superset_app:8088/
 # The base URL for the email report hyperlinks.

@@ -25,9 +25,9 @@ x-superset-user: &superset-user root
 x-superset-depends-on: &superset-depends-on
   - db
   - redis
-  - superset-checks
-x-superset-volumes: &superset-volumes
-  # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
+  # - superset-checks
+x-superset-volumes:
+  &superset-volumes # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
   - ./docker:/app/docker
   - ./superset:/app/superset
   - ./superset-frontend:/app/superset-frontend
@@ -131,22 +131,22 @@ services:
       - REDIS_PORT=6379
       - REDIS_SSL=false
 
-  superset-checks:
-    build:
-      context: .
-      target: python-base
-      cache_from:
-        - apache/superset-cache:3.10-slim-bookworm
-    container_name: superset_checks
-    command: ["/app/scripts/check-env.py"]
-    env_file:
-      - path: docker/.env # default
-        required: true
-      - path: docker/.env-local # optional override
-        required: false
-    user: *superset-user
-    healthcheck:
-      disable: true
+  # superset-checks:
+  #   build:
+  #     context: .
+  #     target: python-base
+  #     cache_from:
+  #       - apache/superset-cache:3.10-slim-bookworm
+  #   container_name: superset_checks
+  #   command: ["/app/scripts/check-env.py"]
+  #   env_file:
+  #     - path: docker/.env # default
+  #       required: true
+  #     - path: docker/.env-local # optional override
+  #       required: false
+  #   user: *superset-user
+  #   healthcheck:
+  #     disable: true
 
   superset-init:
     build:
@@ -209,7 +209,11 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD-SHELL", "celery -A superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME"]
+      test:
+        [
+          "CMD-SHELL",
+          "celery -A superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME",
+        ]
     # Bump memory limit if processing selenium / thumbnails on superset-worker
     # mem_limit: 2038m
     # mem_reservation: 128M
@@ -255,7 +259,11 @@ services:
     user: *superset-user
     volumes: *superset-volumes
     healthcheck:
-      test: ["CMD-SHELL", "celery inspect ping -A superset.tasks.celery_app:app -d celery@$$HOSTNAME"]
+      test:
+        [
+          "CMD-SHELL",
+          "celery inspect ping -A superset.tasks.celery_app:app -d celery@$$HOSTNAME",
+        ]
 
 volumes:
   superset_home:
