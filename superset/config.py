@@ -257,8 +257,8 @@ SQLGLOT_DIALECTS_EXTENSIONS: dict[str, Dialects | type[Dialect]] = {}
 # The limit of queries fetched for query search
 QUERY_SEARCH_LIMIT = 1000
 
-# Flask-WTF flag for CSRF
-WTF_CSRF_ENABLED = True
+# Flask-WTF flag for CSRF TODO: Disable CSRF 
+WTF_CSRF_ENABLED = False
 
 # Add endpoints that need to be exempt from CSRF protection
 WTF_CSRF_EXEMPT_LIST = [
@@ -307,7 +307,7 @@ AUTH_RATE_LIMIT = "5 per second"
 # GLOBALS FOR APP Builder
 # ------------------------------
 # Uncomment to setup Your App name
-APP_NAME = "Dashboards | India Urban Data Exchange"
+APP_NAME = "Dashboards | Ghana Revenue Authority"
 
 # Specify the App icon
 APP_ICON = "/static/assets/images/GRA.png"

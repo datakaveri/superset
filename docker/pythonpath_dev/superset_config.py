@@ -93,46 +93,17 @@ def middleware_function():
     logger.info('[This is a middleware function]')
     if g.user is not None and g.user.is_authenticated:
         logger.info(g.user) 
-
-        # # TODO: Fetch access token
-        # cookie_value = request.cookies.get('session')
-        # session_serializer = SecureCookieSessionInterface() \
-        #                 .get_signing_serializer(current_app)
-        # decoded_session = session_serializer.loads(cookie_value)
-        # session_token = decoded_session['oidc_auth_token']['access_token']
-        # try:
-        #     token_url = 'https://cos.iudx.org.in/auth/v1/token'
-
-        #     headers = {
-        #         'authorization': f'Bearer {session_token}'
-        #     }
-
-        #     data = {
-        #         'itemId': 'rs.cos.iudx.org.in',
-        #         'itemType': 'resource_server',
-        #         'role': 'consumer'
-        #     }
-
-        #     response = requests.post(token_url, headers=headers, json=data)
-
-        #     if response.status_code == 200:
-        #         logger.info(f"[Token from IUDX]: {response.json()['results']['accessToken']}")
-        #     else:
-        #         logger.info('Error fetching token')
-
-        # except Exception as e:
-        #     print(f"Error fetching data: {e}")
         
-        path = request.path
-        if '/api/v1/chart' in path:
-            logger.info('[This is a chart endpoint]')
-            chart_id = path.split('/')[-1]
-            logger.info(f"Chart ID: {chart_id}")
+        # path = request.path
+        # if '/api/v1/chart' in path:
+        #     logger.info('[This is a chart endpoint]')
+        #     chart_id = path.split('/')[-1]
+        #     logger.info(f"Chart ID: {chart_id}")
         
-        if '/api/v1/dashboard' in path:
-            logger.info('[This is a dashboard endpoint]')
-            dashboard_id = path.split('/')[-1]
-            logger.info(f"Dashboard ID: {dashboard_id}")
+        # if '/api/v1/dashboard' in path:
+        #     logger.info('[This is a dashboard endpoint]')
+        #     dashboard_id = path.split('/')[-1]
+        #     logger.info(f"Dashboard ID: {dashboard_id}")
 
 
     else:
@@ -209,6 +180,21 @@ TALISMAN_CONFIG = {
     "content_security_policy_nonce_in": ["script-src"],
     "force_https": False,
     "session_cookie_secure": False,
+}
+
+GUEST_ROLE_NAME= 'embed_dashboard'
+GUEST_TOKEN_JWT_SECRET = "test-guest-secret-change-me"
+GUEST_TOKEN_JWT_EXP_SECONDS = 3600
+
+CORS_OPTIONS = {
+    "supports_credentials": True,
+    "allow_headers": ["*"],
+    "resources": ["*"],
+    # TODO: Add allowed domains
+    "origins": [
+        "http://localhost:4200",
+        "http://localhost:4003/*"
+    ], 
 }
 
 
