@@ -307,10 +307,10 @@ AUTH_RATE_LIMIT = "5 per second"
 # GLOBALS FOR APP Builder
 # ------------------------------
 # Uncomment to setup Your App name
-APP_NAME = "Dashboards | Ghana Revenue Authority"
+APP_NAME = "Dashboards | Central Bank of Nigeria"
 
 # Specify the App icon
-APP_ICON = "/static/assets/images/GRA.png"
+APP_ICON = "/static/assets/images/CBN.png"
 
 # Specify where clicking the logo would take the user'
 # Default value of None will take you to '/superset/welcome'
